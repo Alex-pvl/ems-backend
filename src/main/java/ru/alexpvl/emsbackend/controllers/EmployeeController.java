@@ -34,4 +34,19 @@ public class EmployeeController {
 	) {
 		return employeeService.createEmployee(request);
 	}
+
+	@PutMapping("/{employeeId}")
+	public void updateEmployee(
+		@PathVariable Long employeeId,
+		@RequestBody EmployeeRequest request
+	) throws EmployeeNotFound {
+		employeeService.updateEmployee(employeeId, request);
+	}
+
+	@DeleteMapping("/{employeeId}")
+	public void deleteEmployee(
+		@PathVariable Long employeeId
+	) throws EmployeeNotFound {
+		employeeService.deleteEmployee(employeeId);
+	}
 }
