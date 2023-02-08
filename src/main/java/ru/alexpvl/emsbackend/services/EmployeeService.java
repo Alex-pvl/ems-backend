@@ -3,13 +3,13 @@ package ru.alexpvl.emsbackend.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.alexpvl.emsbackend.dto.EmployeeDTO;
 import ru.alexpvl.emsbackend.dto.EmployeeRequest;
 import ru.alexpvl.emsbackend.exceptions.ApiException;
 import ru.alexpvl.emsbackend.models.Employee;
 import ru.alexpvl.emsbackend.repositories.EmployeeRepository;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class EmployeeService {
@@ -17,22 +17,27 @@ public class EmployeeService {
 	@Autowired
 	private EmployeeRepository employeeRepository;
 
-	public List<EmployeeDTO> getAll() {
-		var employees = employeeRepository.findAll();
-		return employees.stream().map(EmployeeDTO::new).toList();
+	@Transactional(readOnly = true)
+	public <T> List<T> getAll(Function<Employee, T> mapper) {
+		return getAll().stream().map(mapper).toList();
 	}
 
-	public EmployeeDTO getEmployee(Long id) {
-		var employee = findById(id);
-		return new EmployeeDTO(employee);
+	public List<Employee> getAll() {
+		return employeeRepository.findAll();
 	}
 
-	@Transactional
-	public EmployeeDTO createEmployee(EmployeeRequest request) {
+	public Employee getEmployee(Long id) {
+		return employeeRepository.findById(id)
+			.orElseThrow(() -> new ApiException.EmployeeNotFound(id));
+	}
+
+	public Employee createEmployee(EmployeeRequest request) {
 		var employeeId = employeeRepository.create(
 			request.firstName(),
 			request.lastName(),
-			request.email()
+			request.email(),
+			request.departmentId(),
+			request.roleId()
 		);
 
 		return getEmployee((long) employeeId);
@@ -43,16 +48,13 @@ public class EmployeeService {
 			id.intValue(),
 			request.firstName(),
 			request.lastName(),
-			request.email()
+			request.email(),
+			request.departmentId(),
+			request.roleId()
 		);
 	}
 
 	public void deleteEmployee(Long id) {
 		employeeRepository.deleteById(id);
-	}
-
-	private Employee findById(Long id) {
-		return employeeRepository.findById(id)
-			.orElseThrow(() -> new ApiException.EmployeeNotFound(id));
 	}
 }

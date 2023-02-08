@@ -12,27 +12,26 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/employees")
 public class EmployeeController {
-
 	@Autowired
 	private EmployeeService employeeService;
 
 	@GetMapping
 	public List<EmployeeDTO> getEmployees() throws EmployeeNotFound {
-		return employeeService.getAll();
+		return employeeService.getAll(EmployeeDTO::new);
 	}
 
 	@GetMapping("/{employeeId}")
 	public EmployeeDTO getEmployee(
 		@PathVariable Long employeeId
 	) throws EmployeeNotFound {
-		return employeeService.getEmployee(employeeId);
+		return new EmployeeDTO(employeeService.getEmployee(employeeId));
 	}
 
 	@PostMapping
 	public EmployeeDTO createEmployee(
 		@RequestBody EmployeeRequest request
 	) {
-		return employeeService.createEmployee(request);
+		return new EmployeeDTO(employeeService.createEmployee(request));
 	}
 
 	@PutMapping("/{employeeId}")
